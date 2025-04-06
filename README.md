@@ -40,6 +40,25 @@ async function handleRequest(ipAddress) {
 // Example usage
 handleRequest('192.168.0.1');
 
+## Usage as Middleware (Express Example)
+
+```js
+const express = require('express');
+const rateLimiterMiddleware = require('redis-simple-rate-limiter/middleware');
+const RedisClient = require('redis-simple-rate-limiter/redisClient');
+
+const app = express();
+const redis = new RedisClient({ redisUrl: 'redis://localhost:6379' });
+
+app.use(rateLimiterMiddleware(redis.getClient(), 5, 60000)); // 5 reqs / minute
+
+app.get('/', (req, res) => {
+  res.send('Hello World!');
+});
+
+app.listen(3000, () => console.log('Server running...'));
+```
+
 ## Installation
 
 ```bash
