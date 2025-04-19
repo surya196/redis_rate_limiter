@@ -1,6 +1,6 @@
 {
   "name": "redis-simple-rate-limiter",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "A simple Redis-based rate limiter for Node.js supporting Redis Single & Cluster.",
   "main": "src/rateLimiter.js",
   "types": "src/rateLimiter.d.ts",
