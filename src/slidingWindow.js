@@ -16,7 +16,6 @@ async function slidingWindow(redisClient, key, limit, windowMs) {
   pipeline.zcard(key); // Get count of current requests
 
   const [, , , requestCount] = await pipeline.exec();
-  console.log(requestCount)
   return requestCount[1] <= limit;
 }
 
