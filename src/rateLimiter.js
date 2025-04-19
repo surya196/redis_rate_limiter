@@ -1,23 +1,21 @@
-/**
- * Rate limiter using Sliding Window Log algorithm.
- * @param {Object} redisClient - The Redis client instance.
- * @param {string} key - Unique identifier for the client (IP, user ID, etc.).
- * @param {number} limit - Max number of allowed requests.
- * @param {number} windowMs - Time window in milliseconds.
- * @returns {boolean} - True if request is allowed, false if rate-limited.
- */
+const slidingWindow = require("./slidingWindow");
+const tokenBucket = require("./tokenBucket");
+const { memorySlidingWindow, memoryTokenBucket } = require("./memoryStore");
 
-async function rateLimiter(redisClient, key, limit, windowMs) {
-  const now = Date.now();
+async function rateLimiter(redisClient, key, limit, windowMs, options = {}) {
+  const algo = options.algo || "sliding";
+  const mode = options.mode || "redis";
+  const refillRate = options.refillRate || (windowMs / limit);
 
-  const pipeline = redisClient.pipeline();
-  pipeline.zremrangebyscore(key, 0, now - windowMs);
-  pipeline.zadd(key, now, now);
-  pipeline.expire(key, Math.ceil(windowMs / 1000));
-  pipeline.zcard(key);
+  if (mode === "memory") {
+    return algo === "token-bucket"
+      ? memoryTokenBucket(key, limit, refillRate)
+      : memorySlidingWindow(key, limit, windowMs);
+  }
 
-  const [, , , requestCount] = await pipeline.exec();
-  return requestCount[1] <= limit;
+  return algo === "token-bucket"
+    ? await tokenBucket(redisClient, key, limit, windowMs)
+    : await slidingWindow(redisClient, key, limit, windowMs);
 }
 
 module.exports = rateLimiter;

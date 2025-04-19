@@ -7,11 +7,17 @@ const rateLimiter = require("./rateLimiter");
  * @param {Number} duration - Time window in ms
  * @returns Express Middleware
  */
-const rateLimiterMiddleware = (redisClient, limit, duration) => {
+const rateLimiterMiddleware = (redisClient, limit, duration, options) => {
   return async (req, res, next) => {
     const identifier = req.ip || req.headers["x-forwarded-for"] || "anonymous";
 
-    const allowed = await rateLimiter(redisClient, identifier, limit, duration);
+    const allowed = await rateLimiter(
+      redisClient,
+      identifier,
+      limit,
+      duration,
+      options
+    );
 
     if (!allowed) {
       return res.status(429).json({ error: "Too Many Requests" });
